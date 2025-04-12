@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Notificaciones por Actualizaciones
  * Description: Envía correos al cliente y al administrador solo cuando se actualizan plugins, temas o core exitosamente.
- * Version: 1.9.5
+ * Version: 1.9.6
  * Author: Luis Fernando
  * Update URI: https://github.com/soymipagina/notificaciones-actualizaciones
  */
@@ -57,17 +57,27 @@ add_action('upgrader_process_complete', function($upgrader_object, $options) {
         }
 
         $subject = '✅ Sitio actualizado: ' . $sitio;
-        $message = "Hola:\n\nEl sitio '$sitio' ($url) acaba de completar una actualización automática de {$options['type']}.\n\nComponentes actualizados:\n- " . implode("\n- ", $actualizados) . "\n\nRevisa que todo esté funcionando correctamente.\n\nSaludos.";
+        $message = '<div style="font-family: sans-serif; font-size: 15px;">';
+        $message .= '<p><img src="https://soymipagina.com/wp-content/uploads/2024/11/logo-soymipagina-300x69-1.png" alt="Soymipagina" style="height: 40px;"></p>';
+        $message .= "<p>Hola:</p>";
+        $message .= "<p>El sitio <strong>'$sitio'</strong> (<a href=\"$url\">$url</a>) acaba de completar una actualización automática de <strong>{$options['type']}</strong>.</p>";
+        $message .= "<p><strong>Componentes actualizados:</strong></p><ul>";
+        foreach ($actualizados as $item) {
+            $message .= "<li>$item</li>";
+        }
+        $message .= "</ul><p>Revisa que todo esté funcionando correctamente.</p><p>Saludos.</p></div>";
+
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
 
         // Enviar al administrador
-        wp_mail($admin_email, $subject, $message);
+        wp_mail($admin_email, $subject, $message, $headers);
 
         // Enviar a todos los correos del cliente (si están configurados)
         if (!empty($cliente_emails)) {
             $correos = array_map('trim', explode(',', $cliente_emails));
             foreach ($correos as $correo) {
                 if (is_email($correo)) {
-                    wp_mail($correo, $subject, $message);
+                    wp_mail($correo, $subject, $message, $headers);
                 }
             }
         }
@@ -103,5 +113,4 @@ add_action('admin_init', function() {
         echo '<p class="description">Puedes ingresar varios correos separados por comas.</p>';
     }, 'notificaciones-wp', 'notificaciones_wp_main');
 });
-//testing de actualizacion 1.9.5
 ?>
