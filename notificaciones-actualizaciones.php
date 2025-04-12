@@ -8,9 +8,16 @@
  */
 
 add_action('plugins_loaded', function () {
-    require plugin_dir_path(__FILE__) . 'plugin-update-checker/plugin-update-checker.php';
+    $checker_path = plugin_dir_path(__FILE__) . 'plugin-update-checker/plugin-update-checker.php';
 
-    Puc_v4_Factory::buildUpdateChecker(
+    if (file_exists($checker_path)) {
+        require_once $checker_path;
+    } else {
+        error_log("❌ No se encontró plugin-update-checker.php en: " . $checker_path);
+        return;
+    }
+
+    \YahnisElsts\PluginUpdateChecker\v5p5\PucFactory::buildUpdateChecker(
         'https://github.com/soymipagina/notificaciones-actualizaciones/',
         __FILE__,
         'notificaciones-actualizaciones'
