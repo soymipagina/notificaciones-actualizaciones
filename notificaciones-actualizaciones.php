@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Notificaciones por Actualizaciones
  * Description: Envía correos al cliente y al administrador solo cuando se actualizan plugins, temas o core exitosamente.
- * Version: 1.9
+ * Version: 1.9.1
  * Author: Luis Fernando
  * Update URI: https://github.com/soymipagina/notificaciones-actualizaciones
  */
@@ -67,4 +67,5 @@ add_action('admin_init', function() {
         echo '<input type="email" name="notificaciones_wp_email" value="' . esc_attr($value) . '" class="regular-text">';
     }, 'notificaciones-wp', 'notificaciones_wp_main');
 });
+//Lo de escriba
 ?>
