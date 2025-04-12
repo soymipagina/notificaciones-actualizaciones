@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Notificaciones por Actualizaciones
  * Description: Envía correos al cliente y al administrador solo cuando se actualizan plugins, temas o core exitosamente.
- * Version: 1.9.1
+ * Version: 1.9.2
  * Author: Luis Fernando
  * Update URI: https://github.com/soymipagina/notificaciones-actualizaciones
  */
@@ -17,31 +17,59 @@ add_action('plugins_loaded', function () {
     );
 });
 
-// Enviar correo al actualizar plugins, temas o el core
+// Enlace de configuración desde la lista de plugins
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), function($links) {
+    $settings_link = '<a href="' . admin_url('options-general.php?page=notificaciones-wp') . '">Configuración</a>';
+    array_unshift($links, $settings_link);
+    return $links;
+});
+
+// Enviar correo cuando se actualicen plugins, temas o core
 add_action('upgrader_process_complete', function($upgrader_object, $options) {
     if ($options['action'] === 'update' && in_array($options['type'], ['plugin', 'theme', 'core'])) {
 
         $sitio = get_bloginfo('name');
         $url = get_site_url();
         $admin_email = get_option('admin_email');
+        $cliente_emails = get_option('notificaciones_wp_email');
+
+        $actualizados = [];
+        if (!empty($upgrader_object->skin->result['plugin'])) {
+            $plugin_slug = $upgrader_object->skin->result['plugin'];
+            $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin_slug);
+            $actualizados[] = '🔌 Plugin: ' . $plugin_data['Name'];
+        } elseif (!empty($upgrader_object->skin->result['theme'])) {
+            $theme = wp_get_theme($upgrader_object->skin->result['theme']);
+            $actualizados[] = '🎨 Tema: ' . $theme->get('Name');
+        } elseif ($options['type'] === 'core') {
+            $actualizados[] = '🛠️ Core de WordPress';
+        }
+
+        if (empty($actualizados)) {
+            $actualizados[] = '🔄 Componentes desconocidos';
+        }
 
         $subject = '✅ Sitio actualizado: ' . $sitio;
-        $message = "Hola:\n\nEl sitio '$sitio' ($url) acaba de completar una actualización automática de {$options['type']}.\n\nRevisa que todo esté funcionando correctamente.\n\nSaludos.";
+        $message = "Hola:\n\nEl sitio '$sitio' ($url) acaba de completar una actualización automática de {$options['type']}.\n\nComponentes actualizados:\n- " . implode("\n- ", $actualizados) . "\n\nRevisa que todo esté funcionando correctamente.\n\nSaludos.";
 
         // Enviar al administrador
         wp_mail($admin_email, $subject, $message);
 
-        // Enviar a otro correo si lo deseas
-        $otro_correo = get_option('notificaciones_wp_email');
-        if ($otro_correo && is_email($otro_correo)) {
-            wp_mail($otro_correo, $subject, $message);
+        // Enviar a todos los correos del cliente (si están configurados)
+        if (!empty($cliente_emails)) {
+            $correos = array_map('trim', explode(',', $cliente_emails));
+            foreach ($correos as $correo) {
+                if (is_email($correo)) {
+                    wp_mail($correo, $subject, $message);
+                }
+            }
         }
     }
 }, 10, 2);
 
-// Configuración en el panel de administración (opcional)
+// Panel de configuración
 add_action('admin_menu', function() {
-    add_options_page('Notificaciones de Actualizaciones', 'Notificaciones WP', 'manage_options', 'notificaciones-wp', 'notificaciones_wp_config_page');
+    add_options_page('Notificaciones por Actualizaciones', 'Notificaciones WP', 'manage_options', 'notificaciones-wp', 'notificaciones_wp_config_page');
 });
 
 function notificaciones_wp_config_page() {
@@ -62,10 +90,10 @@ function notificaciones_wp_config_page() {
 add_action('admin_init', function() {
     register_setting('notificaciones_wp_settings', 'notificaciones_wp_email');
     add_settings_section('notificaciones_wp_main', '', null, 'notificaciones-wp');
-    add_settings_field('notificaciones_wp_email', 'Correo adicional para notificaciones', function() {
+    add_settings_field('notificaciones_wp_email', 'Correos del cliente:', function() {
         $value = get_option('notificaciones_wp_email', '');
-        echo '<input type="email" name="notificaciones_wp_email" value="' . esc_attr($value) . '" class="regular-text">';
+        echo '<input type="text" name="notificaciones_wp_email" value="' . esc_attr($value) . '" class="regular-text" />';
+        echo '<p class="description">Puedes ingresar varios correos separados por comas.</p>';
     }, 'notificaciones-wp', 'notificaciones_wp_main');
 });
-//Lo de escriba
 ?>
