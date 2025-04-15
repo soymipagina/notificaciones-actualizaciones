@@ -40,6 +40,7 @@ add_action('upgrader_process_complete', function($upgrader_object, $options) {
         $admin_email = get_option('admin_email');
         $cliente_emails = get_option('notificaciones_wp_email');
 
+        
         $actualizados = [];
         if (!empty($upgrader_object->skin->result['plugin'])) {
             $plugin_slug = $upgrader_object->skin->result['plugin'];
@@ -48,13 +49,19 @@ add_action('upgrader_process_complete', function($upgrader_object, $options) {
         } elseif (!empty($upgrader_object->skin->result['theme'])) {
             $theme = wp_get_theme($upgrader_object->skin->result['theme']);
             $actualizados[] = '🎨 Tema: ' . $theme->get('Name');
+        } elseif (!empty($upgrader_object->skin->result['updated'])) {
+            foreach ($upgrader_object->skin->result['updated'] as $slug) {
+                $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $slug);
+                $actualizados[] = '🔌 Plugin: ' . $plugin_data['Name'];
+            }
         } elseif ($options['type'] === 'core') {
             $actualizados[] = '🛠️ Core de WordPress';
         }
-
+        
         if (empty($actualizados)) {
             $actualizados[] = '🔄 Componentes desconocidos';
         }
+        
 
         $subject = '✅ Sitio actualizado: ' . $sitio;
         $message = '<div style="font-family: sans-serif; font-size: 15px;">';
