@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Notificaciones por Actualizaciones
  * Description: Envía correos al cliente y al administrador solo cuando se actualizan plugins, temas o core exitosamente.
- * Version: 1.9.8.1
+ * Version: 1.9.8.2
  * Author: Luis Fernando
  * Update URI: https://github.com/soymipagina/notificaciones-actualizaciones
  */
@@ -87,18 +87,24 @@ add_action('upgrader_process_complete', function($upgrader_object, $options) {
         
         
 
-        $subject = '✅ Sitio actualizado: ' . $sitio;
+        $subject = '✅ Se ha actualizado el sitio web automáticamente';
         $message = '<div style="font-family: sans-serif; font-size: 15px;">';
         $message .= '<p><img src="https://soymipagina.com/wp-content/uploads/2024/11/logo-soymipagina-300x69-1.png" alt="Soymipagina" style="height: 40px;"></p>';
-        $message .= "<p>Hola:</p>";
-        $message .= "<p>El sitio <strong>'$sitio'</strong> (<a href=\"$url\">$url</a>) acaba de completar una actualización automática de <strong>{$options['type']}</strong>.</p>";
+        $message .= "<p>Hola,</p>";
+        $message .= "<p>Queremos contarte que el sitio <strong>'$sitio'</strong> (<a href=\"$url\">$url</a>) fue actualizado correctamente de forma automática.</p>";
+        $message .= "<p>Estas actualizaciones son clave para que el sitio siga funcionando bien, se mantenga seguro y al día con las últimas mejoras y correcciones.</p>";
         $message .= "<p><strong>Componentes actualizados:</strong></p><ul>";
         foreach ($actualizados as $item) {
             $message .= "<li>$item</li>";
         }
-        $message .= "</ul><p>Revisa que todo esté funcionando correctamente.</p><p>Saludos.</p></div>";
-
+        $message .= "</ul>";
+        $message .= "<p>Te recomendamos visitar el sitio para verificar que todo esté funcionando como esperás.</p>";
+        $message .= "<p>Si notás algo fuera de lo normal o tenés cualquier duda, podés escribirnos a <a href='mailto:soporte@soymipagina.com'>soporte@soymipagina.com</a>.</p>";
+        $message .= "<p>Saludos,<br>El equipo de Soymipagina</p>";
+        $message .= '</div>';
+        
         $headers = ['Content-Type: text/html; charset=UTF-8'];
+        
 
         // Enviar al administrador
         wp_mail($admin_email, $subject, $message, $headers);
