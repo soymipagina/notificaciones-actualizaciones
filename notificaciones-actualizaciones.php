@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Notificaciones por Actualizaciones
  * Description: Envía correos al cliente y al administrador solo cuando se actualizan plugins, temas o core exitosamente.
- * Version: 1.9.8.2
+ * Version: 1.9.8.3
  * Author: Luis Fernando
  * Update URI: https://github.com/soymipagina/notificaciones-actualizaciones
  */
@@ -89,7 +89,7 @@ add_action('upgrader_process_complete', function($upgrader_object, $options) {
 
         $subject = '✅ Se ha actualizado el sitio web automáticamente';
         $message = '<div style="font-family: sans-serif; font-size: 15px;">';
-        $message .= '<p><img src="https://soymipagina.com/wp-content/uploads/2024/11/logo-soymipagina-300x69-1.png" alt="Soymipagina" style="height: 40px;"></p>';
+        $message .= '<p><img src="https://soymipagina.com/wp-content/uploads/2022/02/logo_transparent_background.svg" alt="Soymipagina" style="height: 40px;"></p>';
         $message .= "<p>Hola,</p>";
         $message .= "<p>Queremos contarte que el sitio <strong>'$sitio'</strong> (<a href=\"$url\">$url</a>) fue actualizado correctamente de forma automática.</p>";
         $message .= "<p>Estas actualizaciones son clave para que el sitio siga funcionando bien, se mantenga seguro y al día con las últimas mejoras y correcciones.</p>";
