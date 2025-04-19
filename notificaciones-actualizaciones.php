@@ -42,25 +42,49 @@ add_action('upgrader_process_complete', function($upgrader_object, $options) {
 
         
         $actualizados = [];
-        if (!empty($upgrader_object->skin->result['plugin'])) {
-            $plugin_slug = $upgrader_object->skin->result['plugin'];
-            $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin_slug);
-            $actualizados[] = '🔌 Plugin: ' . $plugin_data['Name'];
-        } elseif (!empty($upgrader_object->skin->result['theme'])) {
-            $theme = wp_get_theme($upgrader_object->skin->result['theme']);
-            $actualizados[] = '🎨 Tema: ' . $theme->get('Name');
-        } elseif (!empty($upgrader_object->skin->result['updated'])) {
-            foreach ($upgrader_object->skin->result['updated'] as $slug) {
-                $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $slug);
-                $actualizados[] = '🔌 Plugin: ' . $plugin_data['Name'];
+
+        // 1) Si es un update de plugins
+        if ( $options['type'] === 'plugin' ) {
+            // bulk (varios plugins)
+            if ( ! empty( $options['plugins'] ) && is_array( $options['plugins'] ) ) {
+                foreach ( $options['plugins'] as $plugin_file ) {
+                    $data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin_file );
+                    $actualizados[] = '🔌 Plugin: ' . $data['Name'];
+                }
             }
-        } elseif ($options['type'] === 'core') {
+            // single
+            elseif ( ! empty( $options['plugin'] ) ) {
+                $data = get_plugin_data( WP_PLUGIN_DIR . '/' . $options['plugin'] );
+                $actualizados[] = '🔌 Plugin: ' . $data['Name'];
+            }
+        }
+        
+        // 2) Si es un update de temas
+        elseif ( $options['type'] === 'theme' ) {
+            // bulk (varios temas)
+            if ( ! empty( $options['themes'] ) && is_array( $options['themes'] ) ) {
+                foreach ( $options['themes'] as $theme_slug ) {
+                    $theme = wp_get_theme( $theme_slug );
+                    $actualizados[] = '🎨 Tema: ' . $theme->get( 'Name' );
+                }
+            }
+            // single
+            elseif ( ! empty( $options['theme'] ) ) {
+                $theme = wp_get_theme( $options['theme'] );
+                $actualizados[] = '🎨 Tema: ' . $theme->get( 'Name' );
+            }
+        }
+        
+        // 3) Si es core
+        elseif ( $options['type'] === 'core' ) {
             $actualizados[] = '🛠️ Core de WordPress';
         }
         
-        if (empty($actualizados)) {
+        // 4) Fallback si no encontramos nada
+        if ( empty( $actualizados ) ) {
             $actualizados[] = '🔄 Componentes desconocidos';
         }
+        
         
 
         $subject = '✅ Sitio actualizado: ' . $sitio;
